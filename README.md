@@ -41,7 +41,7 @@ Located in the `feed_examples` folder are the :
 
 - `weather_feeds.py` : Contains the different ways you can use the gora weather feed on your contract.
 
-### NOTE : Follow the instructions at [Setup](#setup) section.
+### NOTE : Follow the instructions at [setup](#setup) section.
 
 `gora_utils` folder contains the gora oracle contract ABI and some utility functions used in testing the contract.
 Located in the `gora` folder are the :
