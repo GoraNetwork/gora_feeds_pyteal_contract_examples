@@ -29,6 +29,8 @@ Located in the `demo_configs` folder are the :
 `feed_examples` folder contains examples as to how to use the oracle for different use cases.
 Located in the `feed_examples` folder are the :
 
+- `setup.py` : Run `python3 setup.py` to setup the Gora localnet node for development.
+
 - `custom_url_feed.py` : Contains the different ways you can make a custom oracle request.
 
 - `flight_feed.py` : Contains the different ways you can make calls to the gora flight feeds.
@@ -39,7 +41,9 @@ Located in the `feed_examples` folder are the :
 
 - `weather_feeds.py` : Contains the different ways you can use the gora weather feed on your contract.
 
-`gora` folder contains the gora oracle contract ABI and some utility functions used in testing the contract.
+### NOTE : Follow the instructions at [Setup](#setup) section.
+
+`gora_utils` folder contains the gora oracle contract ABI and some utility functions used in testing the contract.
 Located in the `gora` folder are the :
 
 - `abi.py` : Contains the gora oracle contract ABI.
@@ -113,6 +117,22 @@ Run the following commands within the project folder:
   - Install dependencies and setup a Python virtual environment in `.venv`.
   - Copy `.env.template` to `.env`.
 - **Start LocalNet**: Use `algokit localnet start` to initiate a local Algorand network.
+
+### Setup Gora Development Environment
+To run test the example contracts provided in this repo.
+
+- you need to run `python3 setup.py` located in the ```gora_feeds_pyteal_contract_examples/projects/gora_feeds_pyteal_contract_examples/smart_contracts
+/feed_examples/```.
+- create a `.env` file at ```gora_feeds_pyteal_contract_examples/projects
+/gora_feeds_pyteal_contract_examples/``` directory.
+
+- This `.env` will contain the following configurations
+<pre>GORA_DEV_CLI_TOOL=/home/usr/gora_cli
+GORA_DEV_CONFIG_FILE=/home/usr/gora_feeds_pyteal_contract_examples/.gora  </pre>
+
+Replace the filepaths with the file paths of the .gora and gora_cli files generated when you executed `setup.py`
+
+
 
 ### Development Workflow
 

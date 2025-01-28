@@ -2,7 +2,7 @@ from pathlib import Path
 import sys,algokit_utils
 from helpers.build import build
 from gora_caller.contract import app
-from gora.utils import ALGOD_CLIENT
+from gora_utils.utils import ALGOD_CLIENT
 
 
 # "/" for linux "\" for windows
@@ -31,7 +31,7 @@ def deploy_to_localnet(deployer):
     requestContract.create()
     requestContract.opt_in()
     print(
-        f"CONTRACT SUCCESFULLY DEPLOYED : \n\n CONTRACT ID :: {requestContract.app_id} \n\n CONTRACT ADDRESS :: {requestContract.app_address}"
+        f"CONTRACT SUCCESFULLY DEPLOYED\n\nCONTRACT ID :: {requestContract.app_id} \nCONTRACT ADDRESS :: {requestContract.app_address}"
     )
 
     return(requestContract,requestContract.app_id,requestContract.app_address)

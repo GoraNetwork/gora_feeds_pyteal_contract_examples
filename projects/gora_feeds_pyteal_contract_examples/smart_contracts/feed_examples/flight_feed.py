@@ -2,11 +2,14 @@ import os,sys,json,time
 import beaker as BK
 from pathlib import Path
 import algokit_utils,uuid
+from dotenv import load_dotenv
+load_dotenv()
 sys.path.append(f"{Path(__file__).parent.parent}")
+from gora import cfg_path,is_dev_nr_running,run_cli
 from demo_configs.request_specs import flightDataSource
 from gora_caller.config import GORA_CONTRACT_ID,GORA_TOKEN_ID
 from demo_configs.deploy_to_localnet import deploy_to_localnet
-from gora.utils import fund_account,stake_algo_for_requests,stake_gora_for_requests,get_gora_box_name,ALGOD_CLIENT
+from gora_utils.utils import fund_account,stake_algo_for_requests,stake_gora_for_requests,get_gora_box_name,ALGOD_CLIENT
 
 
 
@@ -26,14 +29,14 @@ fund_account(owner.address, 1_000_000_000_000)
 fund_account(requestContractAddress, 1_000_000_000_000)
 
 
-print("OPTING INTO GORA AND GORA TOKEN.......")
+print("OPTING INTO GORA AND GORA TOKEN")
 requestContract.call(
     "opt_in_assets",
     gora_token_reference=GORA_TOKEN_ID,
     gora_app_reference=GORA_CONTRACT_ID,
 )
 
-print("STAKING SOME GORA AND ALGO TO THE GORA CONTRACT......")
+print("STAKING SOME GORA AND ALGO TO THE GORA CONTRACT")
 deposit_amount = 10_000_000_000
 stake_algo_for_requests(
     ALGOD_CLIENT,
@@ -55,7 +58,7 @@ print("STAKED GORA AND ALGO TO THE GORA CONTRACT")
 
 
 """ MAKE AN ORACLE CALL TO GORACLE """
-print("MAKING A CLASSIC ORACLE REQUEST......")
+print("MAKING A CLASSIC ORACLE REQUEST")
 req_key = uuid.uuid4().bytes
 user_data = b"SOMETHING_RANDOM" 
 box_name = get_gora_box_name(req_key,requestContractAddress)
@@ -90,11 +93,22 @@ try:
         ),
     )
     print("REQUEST SENT")
+    print(f"Confirmed in round: {result.confirmed_round}")
+    print(f"Top txn ID: {result.tx_id}\n")
 
-    print("Confirmed in round:", result.confirmed_round)
-    print("Top txn ID:", result.tx_id)
+    # WE HAVE SENT THE REQUEST, NOW STARTUP THE LOCAL GORA NODE AND VIEW THE REQUEST.
+    # NOTE : YOU WOULD NOT NEED TO DO THIS IN PRODUCTION/MAINNET
 
-    print("Waiting for for oracle return value (up to 10 seconds)")
+    if is_dev_nr_running():
+        print("Detected development Gora node running in the background")
+    else:
+        print("Background development Gora node not detected, running one temporarily")
+        run_cli("docker-start", [], {
+            "GORA_CONFIG_FILE": cfg_path,
+            "GORA_DEV_ONLY_ROUND": str(result.confirmed_round),
+        }, True)
+
+    print("\nWaiting for for oracle return value (up to 5 seconds)\n")
     time.sleep(10)
 except Exception as e:
     print(f"Oracle couldn't process request because ::: {e}")

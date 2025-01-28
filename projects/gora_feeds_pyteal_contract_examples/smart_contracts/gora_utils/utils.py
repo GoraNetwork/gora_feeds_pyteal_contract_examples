@@ -2,7 +2,7 @@ import beaker as BK
 import algokit_utils
 from algosdk.logic import *
 import time,hashlib,struct
-from gora.abi import GORACLE_ABI
+from gora_utils.abi import GORACLE_ABI
 from algosdk.encoding import decode_address
 from algosdk.abi.method import get_method_by_name, Method
 from algosdk.transaction import (AssetTransferTxn,PaymentTxn,wait_for_confirmation)

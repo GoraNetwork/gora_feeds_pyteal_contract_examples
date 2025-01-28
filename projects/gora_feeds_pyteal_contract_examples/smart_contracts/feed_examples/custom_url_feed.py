@@ -2,11 +2,14 @@ import os,sys,time
 import beaker as BK
 from pathlib import Path
 import algokit_utils,uuid
+from dotenv import load_dotenv
+load_dotenv()
 sys.path.append(f"{Path(__file__).parent.parent}")
+from gora import cfg_path,is_dev_nr_running,run_cli
 from gora_caller.config import GORA_CONTRACT_ID,GORA_TOKEN_ID
 from demo_configs.deploy_to_localnet import deploy_to_localnet
 from demo_configs.request_specs import webPageSource,apiJsonSource
-from gora.utils import fund_account,stake_algo_for_requests,stake_gora_for_requests,get_gora_box_name,describe_gora_num,ALGOD_CLIENT
+from gora_utils.utils import fund_account,stake_algo_for_requests,stake_gora_for_requests,get_gora_box_name,describe_gora_num,ALGOD_CLIENT
 
 
 
@@ -28,7 +31,7 @@ fund_account(requestContractAddress, 1_000_000_000_000)
 
 # ONCE YOU HAVE DEPLOYED YOU SMART CONTRACT YOU NEED TO OPTIN GORA TOKEN AND THE GORA APPLICATION
 # AND OPTIN THE NECCESSARY TOKENS ALGOBET TOKEN AND GORA 
-print("OPTING INTO GORA AND GORA TOKEN.......")
+print("OPTING INTO GORA AND GORA TOKEN")
 requestContract.call(
     "opt_in_assets",
     gora_token_reference=GORA_TOKEN_ID,
@@ -43,7 +46,7 @@ requestContract.call(
 # THIS DEPLETES THE ALGO YOU STAKED ON THE CONTRACT, YOU MIGHT NEED TO STAKE MORE, IDEALY 2 ALGOS IS ENOUGH FOR A SIMPLE APPLICATION
 # THE GORA YOU STAKED IS USED AS THE PAYMENT FOR MAKING REQUESTS, IN WEB2 YOU MIGHT CALL IN THE API COSTS, 
 # EACH TIME YOU MAKE A CALL TO THE ORACLE A CERTAIN AMOUNT IS USED AS FEES THIS IS USED AS A REWARD TO THE VALIDATORS FOR VALIDATING YOUR CALLS
-print("STAKING SOME GORA AND ALGO TO THE GORA CONTRACT......")
+print("STAKING SOME GORA AND ALGO TO THE GORA CONTRACT")
 deposit_amount = 10_000_000_000
 stake_algo_for_requests(
     ALGOD_CLIENT,
@@ -68,7 +71,7 @@ print("STAKED GORA AND ALGO TO THE GORA CONTRACT")
 # NOW LET"S TRYING MAKING A CUSTOM REQUEST TO THE GORA ORACLE
 # YOU NEED TO PROVIDE A REQUEST KEY 
 # (THIS IS A UNIQUE IDENTIFIER FOR YOUR BOX STORAGE ON THE GORA APPLICATION IN CASE YOU NEED ASSISTANCE DEBUGING YOU APPLICATION ON THE GORA CONTRACT)
-print("MAKING A CLASSIC ORACLE REQUEST......")
+print("MAKING A CLASSIC ORACLE REQUEST")
 req_key = uuid.uuid4().bytes
 user_data = b"SOMETHING_RANDOM" # THIS USER DATA CAN BE ANYTHING, IT CAN BE USED AS A KEY TO A BOX FOR STORING THE ORACLE RESPONSE ON THE DESTINATION METHOD 
 # (CHECK THE DESTINATION METHOD ON THE CONTRACT TO SEE HOW IT IS USED)
@@ -100,11 +103,22 @@ try:
         ),
     )
     print("REQUEST SENT")
+    print(f"Confirmed in round: {result.confirmed_round}")
+    print(f"Top txn ID: {result.tx_id}\n")
+    
+    # WE HAVE SENT THE REQUEST, NOW STARTUP THE LOCAL GORA NODE AND VIEW THE REQUEST.
+    # NOTE : YOU WOULD NOT NEED TO DO THIS IN PRODUCTION/MAINNET
 
-    print("Confirmed in round:", result.confirmed_round)
-    print("Top txn ID:", result.tx_id)
+    if is_dev_nr_running():
+        print("Detected development Gora node running in the background")
+    else:
+        print("Background development Gora node not detected, running one temporarily")
+        run_cli("docker-start", [], {
+            "GORA_CONFIG_FILE": cfg_path,
+            "GORA_DEV_ONLY_ROUND": str(result.confirmed_round),
+        }, True)
 
-    print("Waiting for for oracle return value (up to 5 seconds)")
+    print("\nWaiting for for oracle return value (up to 5 seconds)\n")
     time.sleep(5)
 except Exception as e:
     print(f"Oracle couldn't process request because ::: {e}")
@@ -123,14 +137,14 @@ try:
     )
     gora_value = value.raw_value
 
-    print(f"CUSTOM FEED RESPONSE::: BNB HAS INCREASED {describe_gora_num(gora_value)}% IN THE LAST 24 HOURS") # THIS IS USED TO DECODE THE RAW DYNAMICBYTE FROM THE CONTRACT
+    print(f"CUSTOM FEED RESPONSE::: BNB HAS INCREASED {describe_gora_num(gora_value)}% IN THE LAST 24 HOURS\n") # THIS IS USED TO DECODE THE RAW DYNAMICBYTE FROM THE CONTRACT
 except Exception as e:
     print(f"Oracle returned no data becuase ::: {e}")
 
 
 
 
-print("MAKING A CLASSIC ORACLE REQUEST......")
+print("MAKING A CLASSIC ORACLE REQUEST")
 req_key = uuid.uuid4().bytes
 user_data = b"SOMETHING_RANDOM" 
 box_name = get_gora_box_name(req_key,requestContractAddress)
@@ -165,9 +179,8 @@ try:
         ),
     )
     print("REQUEST SENT")
-
-    print("Confirmed in round:", result.confirmed_round)
-    print("Top txn ID:", result.tx_id)
+    print(f"Confirmed in round: {result.confirmed_round}")
+    print(f"Top txn ID: {result.tx_id}\n")
 
     print("Waiting for for oracle return value (up to 5 seconds)")
     time.sleep(5)
