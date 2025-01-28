@@ -1,4 +1,4 @@
-# gora_feeds_pyteal_contract_examples
+# Gora Feeds Pyteal Examples
 
 This project has been generated using AlgoKit. See below for default getting started instructions.
 
